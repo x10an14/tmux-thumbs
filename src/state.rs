@@ -6,7 +6,21 @@ const EXCLUDE_PATTERNS: [(&'static str, &'static str); 1] = [("bash", r"[[:cntrl
 
 const PATTERNS: [(&'static str, &'static str); 15] = [
   ("markdown_url", r"\[[^]]*\]\(([^)]+)\)"),
-  ("uri", r"(?P<match>(https?://|git@|git://|ssh://|ftp://|file:///)[^ ]+)"),
+  (
+    "uri",
+    // Ref https://en.wikipedia.org/wiki/URL#Syntax
+    r#"(?x)(?P<match>
+      (
+        # Scheme/protocols
+        ([a-z-0-9\.]+@)?git|https?|ftp|file|ssh
+      )
+      :///?
+      [^"')(}{\ ]+     # Authority/hostname/FQDN
+      (/[^"')(}{\ ])*  # Path
+      (\?[^")(}{\ ])?  # Query
+      (\#[^")(}{\ ])?  # Fragment
+    )"#,
+  ),
   (
     "diff_summary",
     r"diff --git a/([.\w\-@~\[\]]+?/[.\w\-@\[\]]++) b/([.\w\-@~\[\]]+?/[.\w\-@\[\]]++)",
@@ -367,6 +381,32 @@ mod tests {
     assert_eq!(results.get(2).unwrap().pattern.clone(), "uri");
     assert_eq!(results.get(3).unwrap().text.clone(), "ssh://github.io");
     assert_eq!(results.get(3).unwrap().pattern.clone(), "uri");
+  }
+
+  #[test]
+  fn match_delimited_urls() {
+    let lines: Vec<_> = r#"
+      Lorem ipsum{https://crates.io} lorem {https://github.io?foo=bar} lorem {ssh://github.io}
+      Lorem ipsum(https://crates.io) lorem (https://github.io?foo=bar) lorem (ssh://github.io)
+      Lorem ipsum'https://crates.io' lorem 'https://github.io?foo=bar' lorem ussh://github.io'
+      Lorem ipsum"https://crates.io" lorem "https://github.io?foo=bar" lorem "ssh://github.io"
+    "#
+    .lines()
+    .map(str::trim)
+    .filter(|l| !(l.is_empty() || l.starts_with("#")))
+    .collect();
+    let custom = [].to_vec();
+    let results = State::new(&lines, "abcd", &custom).matches(false, false);
+
+    assert_eq!(results.len(), lines.len() * 3);
+    for line in results.chunks(3) {
+      assert_eq!(line[0].text, "https://crates.io");
+      assert_eq!(line[0].pattern, "uri");
+      assert_eq!(line[1].text, "https://github.io?foo=bar");
+      assert_eq!(line[1].pattern, "uri");
+      assert_eq!(line[2].text, "ssh://github.io");
+      assert_eq!(line[2].pattern, "uri");
+    }
   }
 
   #[test]
