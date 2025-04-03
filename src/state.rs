@@ -6,7 +6,7 @@ const EXCLUDE_PATTERNS: [(&'static str, &'static str); 1] = [("bash", r"[[:cntrl
 
 const PATTERNS: [(&'static str, &'static str); 15] = [
   ("markdown_url", r"\[[^]]*\]\(([^)]+)\)"),
-  ("url", r"(?P<match>(https?://|git@|git://|ssh://|ftp://|file:///)[^ ]+)"),
+  ("uri", r"(?P<match>(https?://|git@|git://|ssh://|ftp://|file:///)[^ ]+)"),
   (
     "diff_summary",
     r"diff --git a/([.\w\-@~\[\]]+?/[.\w\-@\[\]]++) b/([.\w\-@~\[\]]+?/[.\w\-@\[\]]++)",
@@ -360,13 +360,13 @@ mod tests {
 
     assert_eq!(results.len(), 4);
     assert_eq!(results.get(0).unwrap().text.clone(), "https://www.rust-lang.org/tools");
-    assert_eq!(results.get(0).unwrap().pattern.clone(), "url");
+    assert_eq!(results.get(0).unwrap().pattern.clone(), "uri");
     assert_eq!(results.get(1).unwrap().text.clone(), "https://crates.io");
-    assert_eq!(results.get(1).unwrap().pattern.clone(), "url");
+    assert_eq!(results.get(1).unwrap().pattern.clone(), "uri");
     assert_eq!(results.get(2).unwrap().text.clone(), "https://github.io?foo=bar");
-    assert_eq!(results.get(2).unwrap().pattern.clone(), "url");
+    assert_eq!(results.get(2).unwrap().pattern.clone(), "uri");
     assert_eq!(results.get(3).unwrap().text.clone(), "ssh://github.io");
-    assert_eq!(results.get(3).unwrap().pattern.clone(), "url");
+    assert_eq!(results.get(3).unwrap().pattern.clone(), "uri");
   }
 
   #[test]
