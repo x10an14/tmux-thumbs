@@ -532,6 +532,31 @@ This project started as a side project to learn Rust, so I'm sure that is full
 of mistakes and areas to be improve. If you think you can tweak the code to
 make it better, I'll really appreciate a pull request. ;)
 
+### Development environment
+If you have [direnv](https://github.com/direnv/direnv) and the [`nix package manager`](https://nixos.org/download/) (installed with their [flakes](https://nix.dev/manual/nix/stable/development/experimental-features#xp-feature-flakes) and [`nix` command](https://nix.dev/manual/nix/stable/development/experimental-features#xp-feature-nix-command) feature enabled), you can get a fully working development environment.
+
+`nix build` will build both of the `thumbs` and `tmux-thumbs` binaries and place them in `result/bin/`.
+
+Run `nix flake show` to see all other things this development environment can reproducibly build for you:
+```
+├───other less relevant flake outputs omitted
+└───packages
+    ├───aarch64-darwin (omitted)
+    ├───aarch64-linux (omitted)
+    ├───x86_64-darwin (omitted)
+    └───x86_64-linux
+        ├───clippy-check: package 'thumbs-clippy-0.8.0'
+        ├───default: package 'thumbs-0.8.0'
+        ├───docker: package 'docker-image-thumbs.tar.gz'
+        ├───docs: package 'thumbs-doc-0.8.0'
+        ├───sbom: package 'thumbs-sbom-0.8.0'
+        ├───tests: package 'thumbs-nextest-0.8.0'
+        ├───thumbs: package 'thumbs-0.8.0'
+        └───tmux-thumbs: package 'tmux-thumbs-0.8.0'
+```
+ (the project itsel, Software-Bill-Of-Materials, Docker Image, etc).
+
+
 # License
 
 [MIT](https://github.com/fcsonline/tmux-thumbs/blob/master/LICENSE)
